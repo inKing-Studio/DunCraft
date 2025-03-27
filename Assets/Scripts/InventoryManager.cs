@@ -1,55 +1,130 @@
 using UnityEngine;
-using UnityEngine.UI;
 using System.Collections.Generic;
+using UnityEngine.EventSystems;
 
 public class InventoryManager : MonoBehaviour
 {
-    public int gridWidth = 5;
-    public int gridHeight = 5;
+    public static InventoryManager Instance { get; private set; }
+    
+    [Header("Inventory Setup")]
+    public GameObject inventoryPanel;
+    public Transform slotsParent;
     public GameObject slotPrefab;
-    public Transform inventoryParent;
-    public List<InventorySlot> slots;
+    public int inventorySize = 25;
+    public int slotsPerRow = 5;
+    
+    [Header("Dragging Setup")]
+    public Canvas canvas;
+    public GameObject draggedItemPrefab;
+    
+    private List<InventorySlot> slots = new List<InventorySlot>();
+    private DraggedItem currentDraggedItem;
+    private ItemTooltip tooltip;
 
-    private InventorySlot selectedSlot; // Slot actualmente seleccionado
-
-    void Start()
+    private void Awake()
     {
-        CreateInventoryGrid();
+        if (Instance == null)
+        {
+            Instance = this;
+            DontDestroyOnLoad(gameObject);
+        }
+        else
+        {
+            Destroy(gameObject);
+            return;
+        }
+
+        SetupInventory();
+        tooltip = FindAnyObjectByType<ItemTooltip>();
     }
 
-    void CreateInventoryGrid()
+    private void SetupInventory()
     {
-        slots = new List<InventorySlot>();
-        for (int i = 0; i < gridWidth * gridHeight; i++)
+        // Crear slots
+        for (int i = 0; i < inventorySize; i++)
         {
-            GameObject newSlot = Instantiate(slotPrefab, inventoryParent);
-            InventorySlot slot = newSlot.GetComponent<InventorySlot>();
-            slot.Initialize(i, this);
+            GameObject slotGO = Instantiate(slotPrefab, slotsParent);
+            InventorySlot slot = slotGO.GetComponent<InventorySlot>();
             slots.Add(slot);
         }
     }
 
-    public bool AddItem(Item item)
+    public bool AddItem(ItemData item)
     {
         // Buscar un slot vacío
         foreach (var slot in slots)
         {
-            if (slot.currentItem == null)
+            if (slot.GetItem() == null)
             {
                 slot.SetItem(item);
                 return true;
             }
         }
-        Debug.Log("Inventario lleno!");
-        return false; // Inventario lleno
+        return false;
     }
 
-    public void SlotClicked(InventorySlot slot)
+    public void StartDragging(InventorySlot fromSlot)
     {
-        Debug.Log("Slot clicked: " + slot.slotIndex);
-        selectedSlot = slot;
-        // Aquí implementaremos la lógica de selección de items para crafting, equipamiento, etc.
+        if (fromSlot.GetItem() == null)
+            return;
+
+        // Crear objeto arrastrado
+        GameObject draggedObj = Instantiate(draggedItemPrefab, canvas.transform);
+        currentDraggedItem = draggedObj.GetComponent<DraggedItem>();
+        
+        if (currentDraggedItem != null)
+        {
+            currentDraggedItem.Initialize(fromSlot.GetItem(), fromSlot);
+            fromSlot.ClearSlot();
+        }
     }
 
-    // Funciones futuras para remover items, mover items, lógica de crafting, etc.
+    public void StopDragging(InventorySlot toSlot)
+    {
+        if (currentDraggedItem == null)
+            return;
+
+        // Si el slot destino está vacío
+        if (toSlot.GetItem() == null)
+        {
+            toSlot.SetItem(currentDraggedItem.ItemData);
+        }
+        // Si el slot destino tiene un item
+        else
+        {
+            // Intercambiar items
+            ItemData tempItem = toSlot.GetItem();
+            toSlot.SetItem(currentDraggedItem.ItemData);
+            currentDraggedItem.OriginalSlot.SetItem(tempItem);
+        }
+
+        Destroy(currentDraggedItem.gameObject);
+        currentDraggedItem = null;
+    }
+
+    public void CancelDragging()
+    {
+        if (currentDraggedItem != null)
+        {
+            currentDraggedItem.OriginalSlot.SetItem(currentDraggedItem.ItemData);
+            Destroy(currentDraggedItem.gameObject);
+            currentDraggedItem = null;
+        }
+    }
+
+    public void ShowTooltip(ItemData item)
+    {
+        if (tooltip != null && item != null)
+        {
+            tooltip.ShowTooltip(item);
+        }
+    }
+
+    public void HideTooltip()
+    {
+        if (tooltip != null)
+        {
+            tooltip.HideTooltip();
+        }
+    }
 }
