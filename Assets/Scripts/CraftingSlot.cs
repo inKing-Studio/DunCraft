@@ -3,7 +3,7 @@ using UnityEngine.UI;
 using UnityEngine.EventSystems;
 using TMPro;
 
-public class CraftingSlot : MonoBehaviour, IDropHandler
+public class CraftingSlot : MonoBehaviour, IPointerDownHandler, IPointerUpHandler, IPointerEnterHandler, IPointerExitHandler
 {
     public enum SlotType
     {
@@ -18,6 +18,8 @@ public class CraftingSlot : MonoBehaviour, IDropHandler
     private ItemData currentItem;
     private Image slotImage;
     private Color slotDefaultColor;
+    private bool isPointerDown = false;
+    private bool isDragging = false;
 
     void Awake()
     {
@@ -29,65 +31,67 @@ public class CraftingSlot : MonoBehaviour, IDropHandler
         icon.gameObject.SetActive(false);
     }
 
-    public void OnDrop(PointerEventData eventData)
+    public void OnPointerDown(PointerEventData eventData)
     {
-        if (eventData.pointerDrag == null)
-            return;
+        if (currentItem != null && !isDragging && slotType != SlotType.Result)
+        {
+            isPointerDown = true;
+            isDragging = true;
+            InventoryManager.Instance.BeginDragOperation(this, eventData);
+            if (icon != null)
+            {
+                icon.gameObject.SetActive(false);
+            }
+        }
+    }
 
-        DraggedItem draggedItem = eventData.pointerDrag.GetComponent<DraggedItem>();
-        if (draggedItem == null)
-            return;
+    public void OnPointerUp(PointerEventData eventData)
+    {
+        if (isPointerDown)
+        {
+            isPointerDown = false;
+            isDragging = false;
+            InventoryManager.Instance.EndDragOperation(eventData);
+        }
+    }
 
-        // Validar según el tipo de slot
+    public void OnPointerEnter(PointerEventData eventData)
+    {
+        if (currentItem != null)
+        {
+            InventoryManager.Instance.ShowTooltip(currentItem);
+        }
+        InventoryManager.Instance.OnSlotHovered(this);
+    }
+
+    public void OnPointerExit(PointerEventData eventData)
+    {
+        InventoryManager.Instance.HideTooltip();
+        InventoryManager.Instance.OnSlotExited(this);
+    }
+
+    public bool IsValidForItem(ItemData item)
+    {
         switch (slotType)
         {
             case SlotType.Recipe:
-                if (draggedItem.ItemData is RecipeScroll)
-                {
-                    HandleItemPlacement(draggedItem);
-                    CraftingStation.Instance.OnRecipeSlotUpdated(draggedItem.ItemData);
-                }
-                break;
-
+                return item is RecipeScroll;
             case SlotType.Material:
-                if (IsValidMaterial(draggedItem.ItemData))
-                {
-                    HandleItemPlacement(draggedItem);
-                    CraftingStation.Instance.OnMaterialSlotUpdated();
-                }
-                break;
-
+                return IsValidMaterial(item);
             case SlotType.Result:
-                // El slot de resultado no acepta items arrastrados
-                break;
+                return false; // El slot de resultado no acepta items arrastrados
+            default:
+                return false;
         }
     }
 
     private bool IsValidMaterial(ItemData item)
     {
-        // Verificar si el item es un material refinado
         return item.category == MaterialCategory.MetalIngot ||
                item.category == MaterialCategory.ProcessedLeather ||
                item.category == MaterialCategory.ProcessedGem ||
                item.category == MaterialCategory.ProcessedFabric ||
                item.category == MaterialCategory.WoodPlank;
-    }
-
-    private void HandleItemPlacement(DraggedItem draggedItem)
-    {
-        if (currentItem != null)
-        {
-            // Intercambiar items
-            ItemData tempItem = currentItem;
-            SetItem(draggedItem.ItemData);
-            draggedItem.OriginalSlot.SetItem(tempItem);
-        }
-        else
-        {
-            // Colocar nuevo item
-            SetItem(draggedItem.ItemData);
-            draggedItem.OriginalSlot.ClearSlot();
-        }
     }
 
     public void SetItem(ItemData item)
@@ -102,6 +106,16 @@ public class CraftingSlot : MonoBehaviour, IDropHandler
                 itemNameText.text = item.itemName;
             }
             UpdateSlotColor();
+
+            // Notificar a la estación de crafteo
+            if (slotType == SlotType.Recipe)
+            {
+                CraftingStation.Instance.OnRecipeSlotUpdated(item);
+            }
+            else if (slotType == SlotType.Material)
+            {
+                CraftingStation.Instance.OnMaterialSlotUpdated();
+            }
         }
     }
 
@@ -118,6 +132,16 @@ public class CraftingSlot : MonoBehaviour, IDropHandler
         {
             slotImage.color = slotDefaultColor;
         }
+
+        // Notificar a la estación de crafteo
+        if (slotType == SlotType.Recipe)
+        {
+            CraftingStation.Instance.OnRecipeSlotUpdated(null);
+        }
+        else if (slotType == SlotType.Material)
+        {
+            CraftingStation.Instance.OnMaterialSlotUpdated();
+        }
     }
 
     private void UpdateSlotColor()
@@ -125,7 +149,7 @@ public class CraftingSlot : MonoBehaviour, IDropHandler
         if (currentItem != null && slotImage != null)
         {
             Color rarityColor = GetRarityColor(currentItem.rarity);
-            slotImage.color = new Color(rarityColor.r, rarityColor.g, rarityColor.b, 0.3f);
+            slotImage.color = new Color(rarityColor.r, rarityColor.g, rarityColor.b, slotDefaultColor.a);
         }
     }
 

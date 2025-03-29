@@ -243,14 +243,14 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 473261069}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 91f6d37fa5347ab47bb6bc8cd079384b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  inventoryManager: {fileID: 0}
-  itemTemplate: {fileID: 0}
-  numberOfItemsToGenerate: 10
+  inventoryManager: {fileID: 1781875791}
+  itemTemplate: {fileID: 11400000, guid: 50b97a0a315af97489c4b3a3182e2bb6, type: 2}
+  numberOfItemsToGenerate: 7
 --- !u!4 &473261071
 Transform:
   m_ObjectHideFlags: 0
@@ -1060,7 +1060,7 @@ MonoBehaviour:
   inventorySize: 25
   slotsPerRow: 5
   canvas: {fileID: 503565970}
-  draggedItemPrefab: {fileID: 6025203276202284152, guid: 5e6046a7922c21e4e8ce127c9e349e1d, type: 3}
+  draggedItemPrefab: {fileID: 0}
 --- !u!4 &1781875792
 Transform:
   m_ObjectHideFlags: 0
