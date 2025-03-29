@@ -1,26 +1,19 @@
 using UnityEngine;
-using TMPro;
 using UnityEngine.UI;
+using TMPro;
 
 public class ItemTooltip : MonoBehaviour
 {
-    [Header("UI Components")]
     public TextMeshProUGUI itemNameText;
-    public TextMeshProUGUI rarityText;
-    public TextMeshProUGUI descriptionText;
-    public TextMeshProUGUI statsText;
-    public Image itemIcon;
-    public TextMeshProUGUI costText;
+    public TextMeshProUGUI itemDescriptionText;
+    public TextMeshProUGUI itemStatsText;
+    public CanvasGroup canvasGroup;
 
-    private CanvasGroup canvasGroup;
-    private RectTransform rectTransform;
-    private Canvas canvas;
-
-    void Awake()
+    private void Awake()
     {
-        canvasGroup = GetComponent<CanvasGroup>();
-        rectTransform = GetComponent<RectTransform>();
-        canvas = GetComponentInParent<Canvas>();
+        if (canvasGroup == null)
+            canvasGroup = GetComponent<CanvasGroup>();
+            
         HideTooltip();
     }
 
@@ -28,56 +21,50 @@ public class ItemTooltip : MonoBehaviour
     {
         if (item == null) return;
 
-        // Actualizar contenido
-        itemNameText.text = item.itemName;
-        rarityText.text = item.Rarity.ToString();
-        descriptionText.text = item.description;
-        
-        if (itemIcon != null && item.icon != null)
-        {
-            itemIcon.sprite = item.icon;
-            itemIcon.gameObject.SetActive(true);
-        }
-        
-        // Stats
-        string statsString = "";
-        foreach (var mod in item.baseStatModifiers)
-        {
-            statsString += $"{mod.Stat}: {(mod.IsPercentage ? mod.Value + "%" : mod.Value.ToString("F1"))}\n";
-        }
-        statsText.text = statsString;
+        // Mostrar nombre y rareza
+        itemNameText.text = $"{item.itemName}";
+        itemNameText.color = GetRarityColor(item.rarity);
 
-        // Costo
-        if (costText != null)
+        // Mostrar descripción
+        itemDescriptionText.text = item.description;
+
+        // Mostrar stats
+        string statsText = "";
+        
+        // Mostrar todos los modificadores
+        foreach (var mod in item.statModifiers)
         {
-            costText.text = $"Costo: {item.cost}";
+            string prefix = mod.value >= 0 ? "+" : "";
+            statsText += $"{prefix}{mod.value}{(mod.valueType == ModifierValueType.Percentage ? "%" : "")} {mod.statType}\n";
         }
 
-        // Mostrar tooltip
+        itemStatsText.text = statsText;
+
+        // Mostrar el tooltip
         canvasGroup.alpha = 1;
-        
-        // Posicionar cerca del cursor
-        Vector2 mousePos;
-        RectTransformUtility.ScreenPointToLocalPointInRectangle(
-            canvas.GetComponent<RectTransform>(),
-            Input.mousePosition,
-            canvas.worldCamera,
-            out mousePos
-        );
-
-        // Ajustar posición para que no se salga de la pantalla
-        Vector2 tooltipSize = rectTransform.sizeDelta;
-        Vector2 canvasSize = canvas.GetComponent<RectTransform>().sizeDelta;
-        
-        // Asegurar que el tooltip no se salga por la derecha o abajo
-        mousePos.x = Mathf.Min(mousePos.x, canvasSize.x - tooltipSize.x);
-        mousePos.y = Mathf.Max(mousePos.y, -canvasSize.y + tooltipSize.y);
-        
-        rectTransform.anchoredPosition = mousePos;
+        canvasGroup.blocksRaycasts = true;
     }
 
     public void HideTooltip()
     {
         canvasGroup.alpha = 0;
+        canvasGroup.blocksRaycasts = false;
+    }
+
+    private Color GetRarityColor(Rarity rarity)
+    {
+        switch (rarity)
+        {
+            case Rarity.Common:
+                return Color.white;
+            case Rarity.Uncommon:
+                return Color.green;
+            case Rarity.Rare:
+                return Color.blue;
+            case Rarity.Epic:
+                return new Color(0.5f, 0f, 0.5f); // Púrpura
+            default:
+                return Color.white;
+        }
     }
 }

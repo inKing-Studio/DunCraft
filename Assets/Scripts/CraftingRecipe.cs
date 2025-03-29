@@ -36,16 +36,16 @@ public class CraftingRecipe : ScriptableObject
             
             foreach (var mat in materials)
             {
-                if (IsValidMaterial(mat.Category, req.category))
+                if (IsValidMaterial(mat.category, req.category))
                 {
                     if (req.requiresSameType)
                     {
                         if (firstFound)
                         {
-                            lastCategory = mat.Category;
+                            lastCategory = mat.category;
                             firstFound = false;
                         }
-                        else if (mat.Category != lastCategory)
+                        else if (mat.category != lastCategory)
                         {
                             continue;
                         }
@@ -90,8 +90,8 @@ public class CraftingRecipe : ScriptableObject
         // Calcular promedio de calidad y poder de rareza
         foreach (var material in materials)
         {
-            qualityAverage += material.Quality;
-            rarityPower += GetRarityPower(material.Rarity);
+            qualityAverage += material.quality;
+            rarityPower += GetRarityPower(material.rarity);
         }
         
         qualityAverage /= materials.Count;

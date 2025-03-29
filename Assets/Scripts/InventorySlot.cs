@@ -1,12 +1,10 @@
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
-using TMPro;
 
 public class InventorySlot : MonoBehaviour, IDropHandler
 {
     public Image icon;
-    public TextMeshProUGUI itemNameText;
     private ItemData currentItem;
     private Color slotDefaultColor;
     private Image slotImage;
@@ -18,7 +16,10 @@ public class InventorySlot : MonoBehaviour, IDropHandler
         {
             slotDefaultColor = slotImage.color;
         }
-        icon.gameObject.SetActive(false);
+        if (icon != null)
+        {
+            icon.gameObject.SetActive(false);
+        }
     }
 
     public void OnDrop(PointerEventData eventData)
@@ -59,10 +60,16 @@ public class InventorySlot : MonoBehaviour, IDropHandler
 
     private bool IsRefinementPossible(ItemData item1, ItemData item2)
     {
+        // Verificar si ambos items son RawMaterialData
+        RawMaterialData raw1 = item1 as RawMaterialData;
+        RawMaterialData raw2 = item2 as RawMaterialData;
+
+        if (raw1 == null || raw2 == null) return false;
+
         // Verificar si ambos items son materiales sin refinar
-        return IsUnrefinedMaterial(item1.Category) && 
-               IsUnrefinedMaterial(item2.Category) && 
-               AreCompatibleForRefinement(item1, item2);
+        return IsUnrefinedMaterial(raw1.category) && 
+               IsUnrefinedMaterial(raw2.category) && 
+               AreCompatibleForRefinement(raw1, raw2);
     }
 
     private bool IsUnrefinedMaterial(MaterialCategory category)
@@ -74,20 +81,20 @@ public class InventorySlot : MonoBehaviour, IDropHandler
                category == MaterialCategory.WoodTrunk;
     }
 
-    private bool AreCompatibleForRefinement(ItemData item1, ItemData item2)
+    private bool AreCompatibleForRefinement(RawMaterialData item1, RawMaterialData item2)
     {
         // Para pieles, cristales y troncos, deben ser del mismo tipo exacto
-        bool requiresSameType = item1.Category == MaterialCategory.AnimalSkin ||
-                              item1.Category == MaterialCategory.CrystalRaw ||
-                              item1.Category == MaterialCategory.WoodTrunk;
+        bool requiresSameType = item1.category == MaterialCategory.AnimalSkin ||
+                              item1.category == MaterialCategory.CrystalRaw ||
+                              item1.category == MaterialCategory.WoodTrunk;
 
         if (requiresSameType)
         {
-            return item1.Category == item2.Category;
+            return item1.itemName == item2.itemName;
         }
 
         // Para metales y fibras, solo necesitan ser del mismo tipo base
-        return GetBaseCategory(item1.Category) == GetBaseCategory(item2.Category);
+        return GetBaseCategory(item1.category) == GetBaseCategory(item2.category);
     }
 
     private MaterialCategory GetBaseCategory(MaterialCategory category)
@@ -101,8 +108,13 @@ public class InventorySlot : MonoBehaviour, IDropHandler
 
     private void PerformRefinement(ItemData item1, ItemData item2)
     {
+        RawMaterialData raw1 = item1 as RawMaterialData;
+        RawMaterialData raw2 = item2 as RawMaterialData;
+
+        if (raw1 == null || raw2 == null) return;
+
         // Usar el RefinementSystem para crear el nuevo item
-        ItemData refinedItem = RefinementSystem.Instance.RefineItems(item1, item2);
+        ItemData refinedItem = RefinementSystem.Instance.RefineItems(raw1, raw2);
         if (refinedItem != null)
         {
             SetItem(refinedItem);
@@ -116,10 +128,6 @@ public class InventorySlot : MonoBehaviour, IDropHandler
         {
             icon.sprite = item.icon;
             icon.gameObject.SetActive(true);
-            if (itemNameText != null)
-            {
-                itemNameText.text = item.itemName;
-            }
             UpdateSlotColor();
         }
     }
@@ -129,10 +137,6 @@ public class InventorySlot : MonoBehaviour, IDropHandler
         currentItem = null;
         icon.sprite = null;
         icon.gameObject.SetActive(false);
-        if (itemNameText != null)
-        {
-            itemNameText.text = "";
-        }
         if (slotImage != null)
         {
             slotImage.color = slotDefaultColor;
@@ -143,7 +147,7 @@ public class InventorySlot : MonoBehaviour, IDropHandler
     {
         if (currentItem != null && slotImage != null)
         {
-            Color rarityColor = GetRarityColor(currentItem.Rarity);
+            Color rarityColor = GetRarityColor(currentItem.rarity);
             slotImage.color = new Color(rarityColor.r, rarityColor.g, rarityColor.b, 0.3f);
         }
     }

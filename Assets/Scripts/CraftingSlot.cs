@@ -66,11 +66,11 @@ public class CraftingSlot : MonoBehaviour, IDropHandler
     private bool IsValidMaterial(ItemData item)
     {
         // Verificar si el item es un material refinado
-        return item.Category == MaterialCategory.MetalIngot ||
-               item.Category == MaterialCategory.ProcessedLeather ||
-               item.Category == MaterialCategory.ProcessedGem ||
-               item.Category == MaterialCategory.ProcessedFabric ||
-               item.Category == MaterialCategory.WoodPlank;
+        return item.category == MaterialCategory.MetalIngot ||
+               item.category == MaterialCategory.ProcessedLeather ||
+               item.category == MaterialCategory.ProcessedGem ||
+               item.category == MaterialCategory.ProcessedFabric ||
+               item.category == MaterialCategory.WoodPlank;
     }
 
     private void HandleItemPlacement(DraggedItem draggedItem)
@@ -124,7 +124,7 @@ public class CraftingSlot : MonoBehaviour, IDropHandler
     {
         if (currentItem != null && slotImage != null)
         {
-            Color rarityColor = GetRarityColor(currentItem.Rarity);
+            Color rarityColor = GetRarityColor(currentItem.rarity);
             slotImage.color = new Color(rarityColor.r, rarityColor.g, rarityColor.b, 0.3f);
         }
     }

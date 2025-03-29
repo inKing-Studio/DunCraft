@@ -219,7 +219,7 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 274448138}
   m_CullTransparentMesh: 1
---- !u!1 &439706935
+--- !u!1 &473261069
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -227,40 +227,37 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 439706937}
-  - component: {fileID: 439706936}
+  - component: {fileID: 473261071}
+  - component: {fileID: 473261070}
   m_Layer: 0
-  m_Name: GameManager
+  m_Name: InventoryTester
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &439706936
+--- !u!114 &473261070
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 439706935}
-  m_Enabled: 1
+  m_GameObject: {fileID: 473261069}
+  m_Enabled: 0
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3c8a3b9d7133ea7469794de2fdc2be79, type: 3}
+  m_Script: {fileID: 11500000, guid: 91f6d37fa5347ab47bb6bc8cd079384b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  slotPrefab: {fileID: 0}
-  inventoryPanel: {fileID: 0}
-  mainCanvas: {fileID: 0}
-  gridSize: 5
-  slotSpacing: 10
-  slotSize: {x: 100, y: 100}
---- !u!4 &439706937
+  inventoryManager: {fileID: 0}
+  itemTemplate: {fileID: 0}
+  numberOfItemsToGenerate: 10
+--- !u!4 &473261071
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 439706935}
+  m_GameObject: {fileID: 473261069}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
@@ -797,57 +794,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &719140344
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 719140346}
-  - component: {fileID: 719140345}
-  m_Layer: 5
-  m_Name: UIDocument
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!114 &719140345
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 719140344}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 19102, guid: 0000000000000000e000000000000000, type: 0}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_PanelSettings: {fileID: 11400000, guid: 6247b0e5bc03cc0488eeacc67d13c14d, type: 2}
-  m_ParentUI: {fileID: 0}
-  sourceAsset: {fileID: 9197481963319205126, guid: 361084ca76b3d074ba82a8d01cc2e382, type: 3}
-  m_SortingOrder: 0
-  m_WorldSpaceSizeMode: 1
-  m_WorldSpaceWidth: 1920
-  m_WorldSpaceHeight: 1080
---- !u!4 &719140346
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 719140344}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &762689732
 GameObject:
   m_ObjectHideFlags: 0
@@ -1030,15 +976,15 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Padding:
-    m_Left: 45
+    m_Left: 30
     m_Right: 0
-    m_Top: 45
+    m_Top: 30
     m_Bottom: 0
   m_ChildAlignment: 0
   m_StartCorner: 0
   m_StartAxis: 0
-  m_CellSize: {x: 8, y: 8}
-  m_Spacing: {x: 92, y: 92}
+  m_CellSize: {x: 80, y: 80}
+  m_Spacing: {x: 10, y: 10}
   m_Constraint: 1
   m_ConstraintCount: 5
 --- !u!114 &1669786680
@@ -1108,12 +1054,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3c8a3b9d7133ea7469794de2fdc2be79, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  inventoryPanel: {fileID: 1669786677}
+  slotsParent: {fileID: 1669786678}
   slotPrefab: {fileID: 373020130281751891, guid: b99a272eb02a90d489d0459be6f3af8c, type: 3}
-  inventoryPanel: {fileID: 1669786678}
-  mainCanvas: {fileID: 503565970}
-  gridSize: 5
-  slotSpacing: 10
-  slotSize: {x: 100, y: 100}
+  inventorySize: 25
+  slotsPerRow: 5
+  canvas: {fileID: 503565970}
+  draggedItemPrefab: {fileID: 6025203276202284152, guid: 5e6046a7922c21e4e8ce127c9e349e1d, type: 3}
 --- !u!4 &1781875792
 Transform:
   m_ObjectHideFlags: 0
@@ -1215,7 +1162,6 @@ SceneRoots:
   - {fileID: 519420032}
   - {fileID: 619394802}
   - {fileID: 1902686588}
-  - {fileID: 719140346}
-  - {fileID: 439706937}
   - {fileID: 503565971}
   - {fileID: 1781875792}
+  - {fileID: 473261071}

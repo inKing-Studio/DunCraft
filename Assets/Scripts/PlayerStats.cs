@@ -2,57 +2,50 @@ using UnityEngine;
 
 public class PlayerStats : MonoBehaviour
 {
-    // Stats base del jugador
+    [Header("Stats Base")]
     public float baseHP = 100f;
     public float baseMP = 50f;
     public float basePhysicalAttack = 10f;
     public float basePhysicalDefense = 5f;
-    public float baseMagicalAttack = 8f;
+    public float baseMagicalAttack = 10f;
     public float baseMagicalDefense = 5f;
     public float baseSpeed = 5f;
 
-    // Afinidades elementales base
-    public float baseWaterAffinity = 0f;
+    [Header("Afinidades Base")]
     public float baseFireAffinity = 0f;
-    public float baseEnergyAffinity = 0f;
-    public float baseAirAffinity = 0f;
+    public float baseWaterAffinity = 0f;
     public float baseEarthAffinity = 0f;
+    public float baseWindAffinity = 0f;
     public float baseLightAffinity = 0f;
     public float baseDarkAffinity = 0f;
 
-    // Stats actuales (modificados por items)
-    private float currentHP;
-    private float currentMP;
-    private float currentPhysicalAttack;
-    private float currentPhysicalDefense;
-    private float currentMagicalAttack;
-    private float currentMagicalDefense;
-    private float currentSpeed;
+    [Header("Stats Actuales")]
+    public float currentHP;
+    public float currentMP;
+    public float currentPhysicalAttack;
+    public float currentPhysicalDefense;
+    public float currentMagicalAttack;
+    public float currentMagicalDefense;
+    public float currentSpeed;
 
-    // Afinidades actuales
-    private float currentWaterAffinity;
-    private float currentFireAffinity;
-    private float currentEnergyAffinity;
-    private float currentAirAffinity;
-    private float currentEarthAffinity;
-    private float currentLightAffinity;
-    private float currentDarkAffinity;
+    [Header("Afinidades Actuales")]
+    public float currentFireAffinity;
+    public float currentWaterAffinity;
+    public float currentEarthAffinity;
+    public float currentWindAffinity;
+    public float currentLightAffinity;
+    public float currentDarkAffinity;
 
     private PlayerStatsUI statsUI;
 
     void Start()
     {
+        statsUI = Object.FindAnyObjectByType<PlayerStatsUI>();
         ResetStats();
-        statsUI = FindAnyObjectByType<PlayerStatsUI>();
-        if (statsUI != null)
-        {
-            UpdateUI();
-        }
     }
 
     public void ResetStats()
     {
-        // Resetear stats a sus valores base
         currentHP = baseHP;
         currentMP = baseMP;
         currentPhysicalAttack = basePhysicalAttack;
@@ -61,21 +54,21 @@ public class PlayerStats : MonoBehaviour
         currentMagicalDefense = baseMagicalDefense;
         currentSpeed = baseSpeed;
 
-        // Resetear afinidades
-        currentWaterAffinity = baseWaterAffinity;
         currentFireAffinity = baseFireAffinity;
-        currentEnergyAffinity = baseEnergyAffinity;
-        currentAirAffinity = baseAirAffinity;
+        currentWaterAffinity = baseWaterAffinity;
         currentEarthAffinity = baseEarthAffinity;
+        currentWindAffinity = baseWindAffinity;
         currentLightAffinity = baseLightAffinity;
         currentDarkAffinity = baseDarkAffinity;
+
+        UpdateUI();
     }
 
     public void ApplyItemModifiers(ItemData item)
     {
-        if (item == null || item.baseStatModifiers == null) return;
+        if (item == null) return;
 
-        foreach (var modifier in item.baseStatModifiers)
+        foreach (var modifier in item.statModifiers)
         {
             ApplyStatModifier(modifier);
         }
@@ -83,112 +76,45 @@ public class PlayerStats : MonoBehaviour
         UpdateUI();
     }
 
-    public void RemoveItemModifiers(ItemData item)
-    {
-        if (item == null || item.baseStatModifiers == null) return;
-
-        foreach (var modifier in item.baseStatModifiers)
-        {
-            RemoveStatModifier(modifier);
-        }
-
-        UpdateUI();
-    }
-
     private void ApplyStatModifier(StatModifier modifier)
     {
-        switch (modifier.Stat)
+        float value = modifier.GetModifiedValue(1f); // Usar calidad 1 por ahora
+        bool isPercentage = modifier.valueType == ModifierValueType.Percentage;
+        
+        switch (modifier.statType)
         {
-            case StatType.HP:
-                currentHP += modifier.Value;
+            case StatType.Health:
+                currentHP += isPercentage ? baseHP * value / 100f : value;
                 break;
-            case StatType.MP:
-                currentMP += modifier.Value;
+            case StatType.Mana:
+                currentMP += isPercentage ? baseMP * value / 100f : value;
                 break;
-            case StatType.PhysicalAttack:
-                currentPhysicalAttack += modifier.Value;
+            case StatType.Attack:
+                currentPhysicalAttack += isPercentage ? basePhysicalAttack * value / 100f : value;
                 break;
-            case StatType.PhysicalDefense:
-                currentPhysicalDefense += modifier.Value;
-                break;
-            case StatType.MagicalAttack:
-                currentMagicalAttack += modifier.Value;
-                break;
-            case StatType.MagicalDefense:
-                currentMagicalDefense += modifier.Value;
+            case StatType.Defense:
+                currentPhysicalDefense += isPercentage ? basePhysicalDefense * value / 100f : value;
                 break;
             case StatType.Speed:
-                currentSpeed += modifier.Value;
+                currentSpeed += isPercentage ? baseSpeed * value / 100f : value;
                 break;
-            case StatType.WaterAffinity:
-                currentWaterAffinity += modifier.Value;
+            case StatType.FireResistance:
+                currentFireAffinity += isPercentage ? baseFireAffinity * value / 100f : value;
                 break;
-            case StatType.FireAffinity:
-                currentFireAffinity += modifier.Value;
+            case StatType.WaterResistance:
+                currentWaterAffinity += isPercentage ? baseWaterAffinity * value / 100f : value;
                 break;
-            case StatType.EnergyAffinity:
-                currentEnergyAffinity += modifier.Value;
+            case StatType.EarthResistance:
+                currentEarthAffinity += isPercentage ? baseEarthAffinity * value / 100f : value;
                 break;
-            case StatType.AirAffinity:
-                currentAirAffinity += modifier.Value;
+            case StatType.WindResistance:
+                currentWindAffinity += isPercentage ? baseWindAffinity * value / 100f : value;
                 break;
-            case StatType.EarthAffinity:
-                currentEarthAffinity += modifier.Value;
+            case StatType.LightResistance:
+                currentLightAffinity += isPercentage ? baseLightAffinity * value / 100f : value;
                 break;
-            case StatType.LightAffinity:
-                currentLightAffinity += modifier.Value;
-                break;
-            case StatType.DarkAffinity:
-                currentDarkAffinity += modifier.Value;
-                break;
-        }
-    }
-
-    private void RemoveStatModifier(StatModifier modifier)
-    {
-        switch (modifier.Stat)
-        {
-            case StatType.HP:
-                currentHP -= modifier.Value;
-                break;
-            case StatType.MP:
-                currentMP -= modifier.Value;
-                break;
-            case StatType.PhysicalAttack:
-                currentPhysicalAttack -= modifier.Value;
-                break;
-            case StatType.PhysicalDefense:
-                currentPhysicalDefense -= modifier.Value;
-                break;
-            case StatType.MagicalAttack:
-                currentMagicalAttack -= modifier.Value;
-                break;
-            case StatType.MagicalDefense:
-                currentMagicalDefense -= modifier.Value;
-                break;
-            case StatType.Speed:
-                currentSpeed -= modifier.Value;
-                break;
-            case StatType.WaterAffinity:
-                currentWaterAffinity -= modifier.Value;
-                break;
-            case StatType.FireAffinity:
-                currentFireAffinity -= modifier.Value;
-                break;
-            case StatType.EnergyAffinity:
-                currentEnergyAffinity -= modifier.Value;
-                break;
-            case StatType.AirAffinity:
-                currentAirAffinity -= modifier.Value;
-                break;
-            case StatType.EarthAffinity:
-                currentEarthAffinity -= modifier.Value;
-                break;
-            case StatType.LightAffinity:
-                currentLightAffinity -= modifier.Value;
-                break;
-            case StatType.DarkAffinity:
-                currentDarkAffinity -= modifier.Value;
+            case StatType.DarkResistance:
+                currentDarkAffinity += isPercentage ? baseDarkAffinity * value / 100f : value;
                 break;
         }
     }
@@ -198,32 +124,15 @@ public class PlayerStats : MonoBehaviour
         if (statsUI != null)
         {
             statsUI.UpdateAllStats(
-                currentHP, baseHP,
-                currentMP, baseMP,
+                currentHP, currentMP,
                 currentPhysicalAttack, currentPhysicalDefense,
                 currentMagicalAttack, currentMagicalDefense,
                 currentSpeed,
-                currentWaterAffinity, currentFireAffinity,
-                currentEnergyAffinity, currentAirAffinity,
-                currentEarthAffinity, currentLightAffinity,
-                currentDarkAffinity
+                currentFireAffinity, currentWaterAffinity,
+                currentEarthAffinity, currentWindAffinity,
+                currentLightAffinity, currentDarkAffinity,
+                0f, 0f, 0f // Valores adicionales requeridos por el método
             );
         }
     }
-
-    // Getters para los stats actuales
-    public float GetCurrentHP() => currentHP;
-    public float GetCurrentMP() => currentMP;
-    public float GetCurrentPhysicalAttack() => currentPhysicalAttack;
-    public float GetCurrentPhysicalDefense() => currentPhysicalDefense;
-    public float GetCurrentMagicalAttack() => currentMagicalAttack;
-    public float GetCurrentMagicalDefense() => currentMagicalDefense;
-    public float GetCurrentSpeed() => currentSpeed;
-    public float GetCurrentWaterAffinity() => currentWaterAffinity;
-    public float GetCurrentFireAffinity() => currentFireAffinity;
-    public float GetCurrentEnergyAffinity() => currentEnergyAffinity;
-    public float GetCurrentAirAffinity() => currentAirAffinity;
-    public float GetCurrentEarthAffinity() => currentEarthAffinity;
-    public float GetCurrentLightAffinity() => currentLightAffinity;
-    public float GetCurrentDarkAffinity() => currentDarkAffinity;
 }

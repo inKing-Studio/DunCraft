@@ -5,6 +5,13 @@ public class RefinementSystem : MonoBehaviour
 {
     public static RefinementSystem Instance { get; private set; }
 
+    [Header("Prefabs de Items Refinados")]
+    public RefinedMaterialData metalIngotPrefab;
+    public RefinedMaterialData processedLeatherPrefab;
+    public RefinedMaterialData processedGemPrefab;
+    public RefinedMaterialData processedFabricPrefab;
+    public RefinedMaterialData woodPlankPrefab;
+
     private void Awake()
     {
         if (Instance == null)
@@ -18,122 +25,119 @@ public class RefinementSystem : MonoBehaviour
         }
     }
 
-    public ItemData RefineItems(ItemData item1, ItemData item2)
+    public bool CanRefine(RawMaterialData item1, RawMaterialData item2)
     {
-        if (item1 == null || item2 == null)
-            return null;
+        if (item1 == null || item2 == null) return false;
 
-        // Verificar que ambos items son del mismo tipo de material sin refinar
-        if (!CanRefine(item1, item2))
-            return null;
+        // Si son del mismo material exacto, siempre se pueden refinar
+        if (item1.itemName == item2.itemName) return true;
+
+        // Para materiales diferentes, verificar reglas específicas
+        switch (item1.category)
+        {
+            case MaterialCategory.MetalOre:
+            case MaterialCategory.FiberRaw:
+                // Metales y fibras pueden ser diferentes tipos
+                return item1.category == item2.category;
+
+            case MaterialCategory.WoodTrunk:
+            case MaterialCategory.AnimalSkin:
+            case MaterialCategory.CrystalRaw:
+                // Estos deben ser exactamente el mismo tipo
+                return item1.itemName == item2.itemName;
+
+            default:
+                return false;
+        }
+    }
+
+    public ItemData RefineItems(RawMaterialData item1, RawMaterialData item2)
+    {
+        if (!CanRefine(item1, item2)) return null;
 
         // Calcular la calidad promedio
-        float averageQuality = (item1.Quality + item2.Quality) / 2f;
-        
-        // Determinar la rareza basada en la calidad
-        Rarity newRarity;
-        if (averageQuality <= 25f)
-            newRarity = Rarity.Common;
-        else if (averageQuality <= 50f)
-            newRarity = Rarity.Uncommon;
-        else if (averageQuality <= 75f)
-            newRarity = Rarity.Rare;
+        float averageQuality = QualitySystem.CalculateAverageQuality(item1.quality, item2.quality);
+
+        // Obtener el tipo de material refinado basado en los materiales crudos
+        RefinedMaterialData refinedPrefab = GetRefinedPrefab(item1.category);
+        if (refinedPrefab == null) return null;
+
+        // Crear una nueva instancia del material refinado
+        RefinedMaterialData refinedItem = Instantiate(refinedPrefab);
+        refinedItem.usedMaterials.Add(item1);
+        refinedItem.usedMaterials.Add(item2);
+
+        // Establecer la calidad y rareza basada en la calidad
+        refinedItem.quality = averageQuality;
+        refinedItem.rarity = QualitySystem.GetRarityFromQuality(averageQuality);
+
+        // Si los materiales son diferentes, personalizar el nombre y descripción
+        if (item1.itemName != item2.itemName)
+        {
+            switch (item1.category)
+            {
+                case MaterialCategory.MetalOre:
+                    refinedItem.itemName = $"Aleación de {item1.itemName.Replace(" Ore", "")} y {item2.itemName.Replace(" Ore", "")}";
+                    refinedItem.description = $"Una aleación {QualitySystem.GetQualityDescription(averageQuality).ToLower()} " +
+                                           $"creada a partir de {item1.itemName} y {item2.itemName}.\n" +
+                                           $"Calidad: {averageQuality:F1}";
+                    break;
+                case MaterialCategory.FiberRaw:
+                    refinedItem.itemName = $"Tejido Mixto de {item1.itemName} y {item2.itemName}";
+                    refinedItem.description = $"Un tejido {QualitySystem.GetQualityDescription(averageQuality).ToLower()} " +
+                                           $"creado mezclando {item1.itemName} y {item2.itemName}.\n" +
+                                           $"Calidad: {averageQuality:F1}";
+                    break;
+            }
+        }
         else
-            newRarity = Rarity.Epic;
-
-        // Crear el nuevo item refinado
-        ItemData refinedItem = CreateRefinedItem(item1.Category, averageQuality, newRarity);
+        {
+            refinedItem.description = $"Material refinado {QualitySystem.GetQualityDescription(averageQuality).ToLower()} " +
+                                    $"creado a partir de {item1.itemName}.\n" +
+                                    $"Calidad: {averageQuality:F1}";
+        }
         
+        // Actualizar las propiedades del item refinado
+        refinedItem.UpdateFromRawMaterials();
+
         return refinedItem;
     }
 
-    private bool CanRefine(ItemData item1, ItemData item2)
+    private RefinedMaterialData GetRefinedPrefab(MaterialCategory category)
     {
-        // Verificar que ambos items son del mismo tipo base
-        bool sameBaseCategory = AreInSameBaseCategory(item1.Category, item2.Category);
-        
-        // Para pieles, cristales y troncos, deben ser exactamente del mismo tipo
-        bool needsSameType = IsCategoryRequiringSameType(item1.Category);
-        
-        if (needsSameType)
-            return sameBaseCategory && item1.Category == item2.Category;
-            
-        return sameBaseCategory;
+        switch (category)
+        {
+            case MaterialCategory.MetalOre:
+                return metalIngotPrefab;
+            case MaterialCategory.AnimalSkin:
+                return processedLeatherPrefab;
+            case MaterialCategory.CrystalRaw:
+                return processedGemPrefab;
+            case MaterialCategory.FiberRaw:
+                return processedFabricPrefab;
+            case MaterialCategory.WoodTrunk:
+                return woodPlankPrefab;
+            default:
+                return null;
+        }
     }
 
-    private bool AreInSameBaseCategory(MaterialCategory cat1, MaterialCategory cat2)
+    private MaterialCategory GetRefinedCategory(MaterialCategory rawCategory)
     {
-        // Metales
-        if (IsMetalOre(cat1) && IsMetalOre(cat2)) return true;
-        // Pieles
-        if (IsSkin(cat1) && IsSkin(cat2)) return true;
-        // Cristales
-        if (IsCrystal(cat1) && IsCrystal(cat2)) return true;
-        // Hilos
-        if (IsThread(cat1) && IsThread(cat2)) return true;
-        // Troncos
-        if (IsTrunk(cat1) && IsTrunk(cat2)) return true;
-
-        return false;
-    }
-
-    private bool IsCategoryRequiringSameType(MaterialCategory category)
-    {
-        return IsSkin(category) || IsCrystal(category) || IsTrunk(category);
-    }
-
-    private bool IsMetalOre(MaterialCategory category)
-    {
-        return category == MaterialCategory.MetalOre;
-    }
-
-    private bool IsSkin(MaterialCategory category)
-    {
-        return category == MaterialCategory.AnimalSkin;
-    }
-
-    private bool IsCrystal(MaterialCategory category)
-    {
-        return category == MaterialCategory.CrystalRaw;
-    }
-
-    private bool IsThread(MaterialCategory category)
-    {
-        return category == MaterialCategory.FiberRaw;
-    }
-
-    private bool IsTrunk(MaterialCategory category)
-    {
-        return category == MaterialCategory.WoodTrunk;
-    }
-
-    private ItemData CreateRefinedItem(MaterialCategory baseCategory, float quality, Rarity rarity)
-    {
-        MaterialCategory refinedCategory = GetRefinedCategory(baseCategory);
-        
-        // Crear nuevo ScriptableObject
-        ItemData refinedItem = ScriptableObject.CreateInstance<ItemData>();
-        
-        // Configurar propiedades básicas
-        refinedItem.Quality = quality;
-        refinedItem.Rarity = rarity;
-        refinedItem.Category = refinedCategory;
-        
-        // Actualizar nombre y descripción
-        refinedItem.UpdateDescription();
-        
-        return refinedItem;
-    }
-
-    private MaterialCategory GetRefinedCategory(MaterialCategory baseCategory)
-    {
-        // Convertir categoría base a refinada
-        if (IsMetalOre(baseCategory)) return MaterialCategory.MetalIngot;
-        if (IsSkin(baseCategory)) return MaterialCategory.ProcessedLeather;
-        if (IsCrystal(baseCategory)) return MaterialCategory.ProcessedGem;
-        if (IsThread(baseCategory)) return MaterialCategory.ProcessedFabric;
-        if (IsTrunk(baseCategory)) return MaterialCategory.WoodPlank;
-        
-        return baseCategory; // Por defecto retorna la misma categoría
+        switch (rawCategory)
+        {
+            case MaterialCategory.MetalOre:
+                return MaterialCategory.MetalIngot;
+            case MaterialCategory.AnimalSkin:
+                return MaterialCategory.ProcessedLeather;
+            case MaterialCategory.CrystalRaw:
+                return MaterialCategory.ProcessedGem;
+            case MaterialCategory.FiberRaw:
+                return MaterialCategory.ProcessedFabric;
+            case MaterialCategory.WoodTrunk:
+                return MaterialCategory.WoodPlank;
+            default:
+                return rawCategory;
+        }
     }
 }

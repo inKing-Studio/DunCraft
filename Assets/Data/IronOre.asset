@@ -9,23 +9,19 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 9c67a8e9e25edb34f94ee3166e7ee149, type: 3}
-  m_Name: ore
+  m_Script: {fileID: 11500000, guid: 348ab18811198ec4a8ea71bc02f9f40b, type: 3}
+  m_Name: IronOre
   m_EditorClassIdentifier: 
   itemName: Iron ore
+  description: Iron ore description
   icon: {fileID: 21300000, guid: 6f6fcc258e6d9c44bb382b35efc455a1, type: 3}
-  rarity: 1
-  quality: 47
-  Category: 0
-  description: 'Iron ore
-
-
-    Calidad: 47
-
-    Rareza: Uncommon'
-  cost: 1
-  durability: 0
-  weight: 0
-  flexibility: 0
-  conductivity: 0
-  resonance: 0
+  rarity: 0
+  quality: 1
+  category: 0
+  statModifiers:
+  - statType: 3
+    valueType: 1
+    value: 40
+  - statType: 4
+    valueType: 0
+    value: -50

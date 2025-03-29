@@ -1,23 +1,23 @@
 using UnityEngine;
-using System.Collections.Generic;
 
-public class ItemData : ScriptableObject
+[CreateAssetMenu(fileName = "New Raw Material", menuName = "Inventory/Raw Material")]
+public class RawMaterialData : ItemData
 {
-    [Header("Información Básica")]
-    public string itemName;
-    public string description;
-    public Sprite icon;
-    public Rarity rarity;
-    public float quality = 1f;
-    public MaterialCategory category;
 
-    [Header("Modificadores de Stats")]
-    public List<StatModifier> statModifiers = new List<StatModifier>();
-
-    public virtual string GetTooltipText()
+    private void OnEnable()
     {
-        string text = $"{itemName}\n";
-        text += $"Calidad: {quality:P0}\n";
+        // Generar calidad aleatoria al crear una nueva instancia
+        if (quality <= 0)
+        {
+            quality = QualitySystem.GenerateRandomQuality();
+            rarity = QualitySystem.GetRarityFromQuality(quality);
+        }
+    }
+
+    public override string GetTooltipText()
+    {
+        string text = $"{itemName} ({QualitySystem.GetQualityDescription(quality)})\n";
+        text += $"Calidad: {quality:F1}\n";
         text += $"Rareza: {rarity}\n";
         text += $"Categoría: {category}\n\n";
         
@@ -28,7 +28,7 @@ public class ItemData : ScriptableObject
 
         if (statModifiers.Count > 0)
         {
-            text += "Modificadores:\n";
+            text += "\nModificadores:\n";
             foreach (var mod in statModifiers)
             {
                 string valueText = mod.valueType == ModifierValueType.Percentage 
