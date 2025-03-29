@@ -16,7 +16,6 @@ public class InventoryManager : MonoBehaviour
     
     [Header("Dragging Setup")]
     public Canvas canvas;
-    public GameObject draggedItemPrefab;
     
     private List<InventorySlot> slots = new List<InventorySlot>();
     private GameObject draggedItemObj;
@@ -92,22 +91,21 @@ public class InventoryManager : MonoBehaviour
             craftSlot.icon.gameObject.SetActive(false);
 
         // Crear la imagen de arrastre
-        draggedItemObj = Instantiate(draggedItemPrefab, canvas.transform);
-        draggedItemRect = draggedItemObj.GetComponent<RectTransform>();
-        draggedItemImage = draggedItemObj.GetComponent<Image>();
-
-        // Configurar la imagen
-        draggedItemImage.sprite = draggedItem.icon;
-        draggedItemImage.preserveAspect = true;
-        draggedItemImage.raycastTarget = false; // Importante para evitar interferencias
+        draggedItemObj = new GameObject("DraggedItem");
+        draggedItemObj.transform.SetParent(canvas.transform);
+        
+        // Agregar y configurar RectTransform
+        draggedItemRect = draggedItemObj.AddComponent<RectTransform>();
+        draggedItemRect.sizeDelta = new Vector2(80, 80);
         draggedItemRect.localScale = Vector3.one * 0.77f;
-        
-        // Ajustar el tamaño del RectTransform para que coincida con el tamaño del slot
-        draggedItemRect.sizeDelta = new Vector2(80, 80); // Ajusta estos valores según el tamaño de tus slots
-        
-        // Centrar la imagen en el cursor
         draggedItemRect.pivot = new Vector2(0.5f, 0.5f);
         draggedItemRect.position = eventData.position;
+
+        // Agregar y configurar Image
+        draggedItemImage = draggedItemObj.AddComponent<Image>();
+        draggedItemImage.sprite = draggedItem.icon;
+        draggedItemImage.preserveAspect = true;
+        draggedItemImage.raycastTarget = false;
         
         Debug.Log("Drag image created");
     }
