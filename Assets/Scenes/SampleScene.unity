@@ -1060,7 +1060,7 @@ MonoBehaviour:
   inventorySize: 25
   slotsPerRow: 5
   canvas: {fileID: 503565970}
-  draggedItemPrefab: {fileID: 0}
+  draggedItemPrefab: {fileID: 6025203276202284152, guid: 5e6046a7922c21e4e8ce127c9e349e1d, type: 3}
 --- !u!4 &1781875792
 Transform:
   m_ObjectHideFlags: 0

@@ -99,7 +99,14 @@ public class InventoryManager : MonoBehaviour
         // Configurar la imagen
         draggedItemImage.sprite = draggedItem.icon;
         draggedItemImage.preserveAspect = true;
+        draggedItemImage.raycastTarget = false; // Importante para evitar interferencias
         draggedItemRect.localScale = Vector3.one * 0.77f;
+        
+        // Ajustar el tamaño del RectTransform para que coincida con el tamaño del slot
+        draggedItemRect.sizeDelta = new Vector2(80, 80); // Ajusta estos valores según el tamaño de tus slots
+        
+        // Centrar la imagen en el cursor
+        draggedItemRect.pivot = new Vector2(0.5f, 0.5f);
         draggedItemRect.position = eventData.position;
         
         Debug.Log("Drag image created");
