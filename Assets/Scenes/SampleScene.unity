@@ -249,8 +249,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   inventoryManager: {fileID: 1781875791}
-  itemTemplate: {fileID: 11400000, guid: 50b97a0a315af97489c4b3a3182e2bb6, type: 2}
-  numberOfItemsToGenerate: 7
+  testItems:
+  - {fileID: 11400000, guid: af1d502b8b7d91f44afe6f16b000e5d7, type: 2}
+  - {fileID: 11400000, guid: 50b97a0a315af97489c4b3a3182e2bb6, type: 2}
+  - {fileID: 11400000, guid: c6b1a1d16f4376747afc1f80c0e9624a, type: 2}
+  numberOfItemsToGenerate: 25
+  generateItemsKey: 103
+  clearInventoryKey: 99
 --- !u!4 &473261071
 Transform:
   m_ObjectHideFlags: 0
@@ -1035,6 +1040,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1781875792}
   - component: {fileID: 1781875791}
+  - component: {fileID: 1781875793}
   m_Layer: 0
   m_Name: InventorySystem
   m_TagString: Untagged
@@ -1058,9 +1064,7 @@ MonoBehaviour:
   slotsParent: {fileID: 1669786678}
   slotPrefab: {fileID: 373020130281751891, guid: b99a272eb02a90d489d0459be6f3af8c, type: 3}
   inventorySize: 25
-  slotsPerRow: 5
   canvas: {fileID: 503565970}
-  draggedItemPrefab: {fileID: 6025203276202284152, guid: 5e6046a7922c21e4e8ce127c9e349e1d, type: 3}
 --- !u!4 &1781875792
 Transform:
   m_ObjectHideFlags: 0
@@ -1076,6 +1080,39 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1781875793
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1781875790}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 71888be8e8a34fc4c9e50260a4cd8130, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  metalIngots:
+  - refinedData: {fileID: 11400000, guid: cd0bca299c10cbd4ca1846536bf37ff1, type: 2}
+    requiredMaterials:
+    - {fileID: 11400000, guid: 50b97a0a315af97489c4b3a3182e2bb6, type: 2}
+    - {fileID: 11400000, guid: 50b97a0a315af97489c4b3a3182e2bb6, type: 2}
+  - refinedData: {fileID: 11400000, guid: 44e220ebc88205142a214b7ff1ea3103, type: 2}
+    requiredMaterials:
+    - {fileID: 11400000, guid: af1d502b8b7d91f44afe6f16b000e5d7, type: 2}
+    - {fileID: 11400000, guid: af1d502b8b7d91f44afe6f16b000e5d7, type: 2}
+  - refinedData: {fileID: 11400000, guid: 97faea57c4b01d34792bfa4f7759f33c, type: 2}
+    requiredMaterials:
+    - {fileID: 11400000, guid: af1d502b8b7d91f44afe6f16b000e5d7, type: 2}
+    - {fileID: 11400000, guid: 50b97a0a315af97489c4b3a3182e2bb6, type: 2}
+  processedLeather: []
+  cutGems: []
+  processedFabrics:
+  - refinedData: {fileID: 11400000, guid: 38f7f0473f97869489402791c7a659f6, type: 2}
+    requiredMaterials:
+    - {fileID: 11400000, guid: c6b1a1d16f4376747afc1f80c0e9624a, type: 2}
+    - {fileID: 11400000, guid: c6b1a1d16f4376747afc1f80c0e9624a, type: 2}
+  processedWood: []
 --- !u!1 &1902686585
 GameObject:
   m_ObjectHideFlags: 0

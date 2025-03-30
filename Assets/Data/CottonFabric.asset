@@ -10,15 +10,13 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: fef56eb2a967ca64380ac908d752e385, type: 3}
-  m_Name: IronCopperAlloy
+  m_Name: CottonFabric
   m_EditorClassIdentifier: 
-  itemName: Iron copper alloy
-  description: Iron copper alloy description
-  icon: {fileID: 21300000, guid: 5036c0992c7dd3142a70fc1452b0a3ce, type: 3}
+  itemName: Cotton fabric
+  description: Cotton fabric description
+  icon: {fileID: 21300000, guid: ae30364d24a834143899a43c53ffb237, type: 3}
   rarity: 0
   quality: 1
-  category: 5
+  category: 8
   statModifiers: []
-  usedMaterials:
-  - {fileID: 11400000, guid: af1d502b8b7d91f44afe6f16b000e5d7, type: 2}
-  - {fileID: 11400000, guid: 50b97a0a315af97489c4b3a3182e2bb6, type: 2}
+  usedMaterials: []

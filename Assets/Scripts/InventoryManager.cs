@@ -12,7 +12,6 @@ public class InventoryManager : MonoBehaviour
     public Transform slotsParent;
     public GameObject slotPrefab;
     public int inventorySize = 25;
-    public int slotsPerRow = 5;
     
     [Header("Dragging Setup")]
     public Canvas canvas;
@@ -29,17 +28,7 @@ public class InventoryManager : MonoBehaviour
 
     private void Awake()
     {
-        if (Instance == null)
-        {
-            Instance = this;
-            DontDestroyOnLoad(gameObject);
-        }
-        else
-        {
-            Destroy(gameObject);
-            return;
-        }
-
+        Instance = this;
         SetupInventory();
         tooltip = FindAnyObjectByType<ItemTooltip>();
     }
@@ -77,90 +66,113 @@ public class InventoryManager : MonoBehaviour
 
     public void BeginDragOperation(MonoBehaviour slot, PointerEventData eventData)
     {
-        Debug.Log("BeginDragOperation called");
         draggedItem = GetItemFromSlot(slot);
-        if (draggedItem == null || isDragging) return;
+        if (draggedItem == null) return;
 
+        Debug.Log($"Comenzando arrastre de: {draggedItem.itemName} (Tipo: {draggedItem.GetType().Name})");
+        if (draggedItem is RawMaterialData rawMat)
+        {
+            Debug.Log($"Es material en bruto. Categoría: {rawMat.category}");
+        }
+        
         sourceSlot = slot;
         isDragging = true;
 
-        // Ocultar el item en el slot original
         if (slot is InventorySlot invSlot)
             invSlot.HideIcon();
-        else if (slot is CraftingSlot craftSlot)
-            craftSlot.icon.gameObject.SetActive(false);
 
-        // Crear la imagen de arrastre
         draggedItemObj = new GameObject("DraggedItem");
         draggedItemObj.transform.SetParent(canvas.transform);
         
-        // Agregar y configurar RectTransform
         draggedItemRect = draggedItemObj.AddComponent<RectTransform>();
         draggedItemRect.sizeDelta = new Vector2(80, 80);
         draggedItemRect.localScale = Vector3.one * 0.77f;
-        draggedItemRect.pivot = new Vector2(0.5f, 0.5f);
         draggedItemRect.position = eventData.position;
 
-        // Agregar y configurar Image
         draggedItemImage = draggedItemObj.AddComponent<Image>();
         draggedItemImage.sprite = draggedItem.icon;
         draggedItemImage.preserveAspect = true;
         draggedItemImage.raycastTarget = false;
-        
-        Debug.Log("Drag image created");
     }
 
     public void EndDragOperation(PointerEventData eventData)
     {
-        Debug.Log("EndDragOperation called");
         if (!isDragging) return;
 
-        bool validDrop = false;
-        if (hoveredSlot != null)
+        Debug.Log("Finalizando operación de arrastre");
+
+        if (hoveredSlot != null && hoveredSlot is InventorySlot)
         {
-            Debug.Log($"Hovered slot: {hoveredSlot.GetType().Name}");
+            ItemData targetItem = GetItemFromSlot(hoveredSlot);
+            Debug.Log($"Item en slot destino: {(targetItem != null ? targetItem.itemName : "vacío")} (Tipo: {(targetItem != null ? targetItem.GetType().Name : "null")})");
+
+            // Verificar si ambos items son materiales en bruto
+            bool isSourceRaw = draggedItem is RawMaterialData;
+            bool isTargetRaw = targetItem is RawMaterialData;
             
-            // Verificar si el drop es válido
-            if (hoveredSlot is CraftingSlot craftSlot)
-            {
-                validDrop = craftSlot.IsValidForItem(draggedItem);
-            }
-            else if (hoveredSlot is InventorySlot)
-            {
-                validDrop = true;
-            }
+            Debug.Log($"Source es RawMaterial: {isSourceRaw}");
+            Debug.Log($"Target es RawMaterial: {isTargetRaw}");
 
-            if (validDrop)
+            if (sourceSlot != hoveredSlot && isSourceRaw && isTargetRaw)
             {
-                ItemData targetItem = GetItemFromSlot(hoveredSlot);
-                SetItemToSlot(hoveredSlot, draggedItem);
+                var sourceRawMaterial = draggedItem as RawMaterialData;
+                var targetRawMaterial = targetItem as RawMaterialData;
 
-                if (targetItem != null)
+                Debug.Log($"Intentando refinar materiales:");
+                Debug.Log($"Material 1: {sourceRawMaterial.itemName} (Categoría: {sourceRawMaterial.category})");
+                Debug.Log($"Material 2: {targetRawMaterial.itemName} (Categoría: {targetRawMaterial.category})");
+
+                if (RefinementSystem.Instance == null)
                 {
-                    SetItemToSlot(sourceSlot, targetItem);
+                    Debug.LogError("¡RefinementSystem no encontrado!");
                 }
                 else
                 {
-                    ClearSlot(sourceSlot);
+                    Debug.Log("RefinementSystem encontrado - Verificando si se pueden refinar");
+                    if (RefinementSystem.Instance.CanRefine(sourceRawMaterial, targetRawMaterial))
+                    {
+                        Debug.Log("Los materiales pueden ser refinados - Iniciando refinamiento");
+                        ItemData refinedItem = RefinementSystem.Instance.RefineItems(sourceRawMaterial, targetRawMaterial);
+                        
+                        if (refinedItem != null)
+                        {
+                            Debug.Log($"Refinamiento exitoso - Creado: {refinedItem.itemName}");
+                            ClearSlot(sourceSlot);
+                            ClearSlot(hoveredSlot);
+                            SetItemToSlot(hoveredSlot, refinedItem);
+                            
+                            CleanupDragOperation();
+                            return;
+                        }
+                        else
+                        {
+                            Debug.LogError("El refinamiento falló - refinedItem es null");
+                        }
+                    }
+                    else
+                    {
+                        Debug.Log("Los materiales no pueden ser refinados");
+                    }
                 }
-                Debug.Log("Item swapped successfully");
             }
-        }
 
-        if (!validDrop)
+            Debug.Log("Realizando swap normal de items");
+            SwapItems(hoveredSlot, targetItem);
+        }
+        else
         {
-            Debug.Log("Invalid drop, returning item");
             if (sourceSlot is InventorySlot invSlot)
                 invSlot.ShowIcon();
-            else if (sourceSlot is CraftingSlot craftSlot)
-                craftSlot.icon.gameObject.SetActive(true);
         }
 
-        // Limpiar
+        CleanupDragOperation();
+    }
+
+    private void CleanupDragOperation()
+    {
         if (draggedItemObj != null)
-        {
             Destroy(draggedItemObj);
-        }
+            
         isDragging = false;
         draggedItemObj = null;
         draggedItemRect = null;
@@ -170,12 +182,19 @@ public class InventoryManager : MonoBehaviour
         hoveredSlot = null;
     }
 
+    private void SwapItems(MonoBehaviour targetSlot, ItemData targetItem)
+    {
+        SetItemToSlot(targetSlot, draggedItem);
+        if (targetItem != null)
+            SetItemToSlot(sourceSlot, targetItem);
+        else
+            ClearSlot(sourceSlot);
+    }
+
     private ItemData GetItemFromSlot(MonoBehaviour slot)
     {
         if (slot is InventorySlot invSlot)
             return invSlot.GetItem();
-        if (slot is CraftingSlot craftSlot)
-            return craftSlot.GetItem();
         return null;
     }
 
@@ -183,46 +202,34 @@ public class InventoryManager : MonoBehaviour
     {
         if (slot is InventorySlot invSlot)
             invSlot.SetItem(item);
-        else if (slot is CraftingSlot craftSlot)
-            craftSlot.SetItem(item);
     }
 
     private void ClearSlot(MonoBehaviour slot)
     {
         if (slot is InventorySlot invSlot)
             invSlot.ClearSlot();
-        else if (slot is CraftingSlot craftSlot)
-            craftSlot.ClearSlot();
     }
 
     public void OnSlotHovered(MonoBehaviour slot)
     {
-        Debug.Log($"Slot hovered: {slot.GetType().Name}");
         hoveredSlot = slot;
     }
 
     public void OnSlotExited(MonoBehaviour slot)
     {
-        Debug.Log($"Slot exited: {slot.GetType().Name}");
         if (hoveredSlot == slot)
-        {
             hoveredSlot = null;
-        }
     }
 
     public void ShowTooltip(ItemData item)
     {
         if (tooltip != null && item != null && !isDragging)
-        {
             tooltip.ShowTooltip(item);
-        }
     }
 
     public void HideTooltip()
     {
         if (tooltip != null)
-        {
             tooltip.HideTooltip();
-        }
     }
 }
