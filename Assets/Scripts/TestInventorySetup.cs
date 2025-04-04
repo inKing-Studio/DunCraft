@@ -56,16 +56,31 @@ public class TestInventorySetup : MonoBehaviour
 
             // Crear una instancia del mismo tipo que el item seleccionado
             ItemData newItem;
-            if (selectedItem is RawMaterialData)
+            if (selectedItem is RawMaterialData rawMaterial)
             {
                 var newRawMaterial = ScriptableObject.CreateInstance<RawMaterialData>();
-                newRawMaterial.category = (selectedItem as RawMaterialData).category;
+                // Copiar propiedades específicas de RawMaterialData
+                newRawMaterial.itemCategory = ItemCategory.Material;
+                newRawMaterial.materialCategory = rawMaterial.materialCategory;
                 newItem = newRawMaterial;
-                Debug.Log($"Creado material en bruto: {selectedItem.itemName} (Categoría: {newRawMaterial.category})");
+                Debug.Log($"Creado material en bruto: {selectedItem.itemName} (Categoría: {newRawMaterial.materialCategory})");
+            }
+            else if (selectedItem is RefinedMaterialData refinedMaterial)
+            {
+                var newRefinedMaterial = ScriptableObject.CreateInstance<RefinedMaterialData>();
+                // Copiar propiedades específicas de RefinedMaterialData
+                newRefinedMaterial.itemCategory = ItemCategory.Material;
+                newRefinedMaterial.materialCategory = refinedMaterial.materialCategory;
+                newRefinedMaterial.usedMaterials = new List<RawMaterialData>(refinedMaterial.usedMaterials);
+                newItem = newRefinedMaterial;
+                Debug.Log($"Creado material refinado: {selectedItem.itemName} (Categoría: {newRefinedMaterial.materialCategory})");
             }
             else
             {
                 newItem = ScriptableObject.CreateInstance<ItemData>();
+                // Copiar propiedades básicas
+                newItem.itemCategory = selectedItem.itemCategory;
+                newItem.materialCategory = selectedItem.materialCategory;
                 Debug.Log($"Creado item normal: {selectedItem.itemName}");
             }
 

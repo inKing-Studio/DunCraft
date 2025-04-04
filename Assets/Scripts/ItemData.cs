@@ -8,8 +8,13 @@ public class ItemData : ScriptableObject
     public string description;
     public Sprite icon;
     public Rarity rarity;
-    public float quality = 1f;
-    public MaterialCategory category;
+    public ItemCategory itemCategory;
+    
+    [Header("Propiedades de Material")]
+    [Tooltip("Solo se usa si itemCategory es Material")]
+    public MaterialCategory materialCategory;
+    [Tooltip("Solo se usa si itemCategory es Material")]
+    [ReadOnlyAttribute] public float quality = 1f;
 
     [Header("Modificadores de Stats")]
     public List<StatModifier> statModifiers = new List<StatModifier>();
@@ -17,18 +22,22 @@ public class ItemData : ScriptableObject
     public virtual string GetTooltipText()
     {
         string text = $"{itemName}\n";
-        text += $"Calidad: {quality:P0}\n";
         text += $"Rareza: {rarity}\n";
-        text += $"Categoría: {category}\n\n";
+        
+        if (itemCategory == ItemCategory.Material)
+        {
+            text += $"Calidad: {quality:P0}\n";
+            text += $"Categoría: {materialCategory}\n";
+        }
         
         if (!string.IsNullOrEmpty(description))
         {
-            text += $"{description}\n\n";
+            text += $"\n{description}\n";
         }
 
         if (statModifiers.Count > 0)
         {
-            text += "Modificadores:\n";
+            text += "\nModificadores:\n";
             foreach (var mod in statModifiers)
             {
                 string valueText = mod.valueType == ModifierValueType.Percentage 

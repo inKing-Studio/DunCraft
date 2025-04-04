@@ -1,0 +1,13 @@
+{
+  "mcpServers": {
+    "unityMCP": {
+      "command": "uv",
+      "args": [
+        "--directory",
+        "C:\\Users\\Admin\\Desktop\\AItools\\DunCraft\\Library\\PackageCache\\com.justinpbarnett.unity-mcp@13508f2e56e7\\Python",
+        "run",
+        "server.py"
+      ]
+    }
+  }
+}

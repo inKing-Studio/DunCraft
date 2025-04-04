@@ -16,6 +16,7 @@ MonoBehaviour:
   description: Cotton fiber description
   icon: {fileID: 21300000, guid: 3c9903684b5706e43b892beda228e082, type: 3}
   rarity: 0
+  itemCategory: 0
+  materialCategory: 4
   quality: 1
-  category: 3
   statModifiers: []

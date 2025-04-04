@@ -48,7 +48,7 @@ public class RefinedMaterialData : ItemData
         string text = $"{itemName} ({QualitySystem.GetQualityDescription(quality)})\\n";
         text += $"Calidad: {quality:F1}\\n";
         text += $"Rareza: {rarity}\\n";
-        text += $"Categoría: {category}\\n\\n";
+        text += $"Categoría: {materialCategory}\\n\\n";
         
         if (!string.IsNullOrEmpty(description))
         {

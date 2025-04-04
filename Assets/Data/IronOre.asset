@@ -16,8 +16,9 @@ MonoBehaviour:
   description: Iron ore description
   icon: {fileID: 21300000, guid: 6f6fcc258e6d9c44bb382b35efc455a1, type: 3}
   rarity: 0
+  itemCategory: 0
+  materialCategory: 1
   quality: 1
-  category: 0
   statModifiers:
   - statType: 3
     valueType: 1

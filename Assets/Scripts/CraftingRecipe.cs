@@ -36,16 +36,16 @@ public class CraftingRecipe : ScriptableObject
             
             foreach (var mat in materials)
             {
-                if (IsValidMaterial(mat.category, req.category))
+                if (IsValidMaterial(mat.materialCategory, req.category))
                 {
                     if (req.requiresSameType)
                     {
                         if (firstFound)
                         {
-                            lastCategory = mat.category;
+                            lastCategory = mat.materialCategory;
                             firstFound = false;
                         }
-                        else if (mat.category != lastCategory)
+                        else if (mat.materialCategory != lastCategory)
                         {
                             continue;
                         }

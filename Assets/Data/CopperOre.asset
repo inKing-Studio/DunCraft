@@ -16,8 +16,9 @@ MonoBehaviour:
   description: Copper ore description
   icon: {fileID: 21300000, guid: 9b300b3cd567f414da749eff63d2268c, type: 3}
   rarity: 0
+  itemCategory: 0
+  materialCategory: 1
   quality: 1
-  category: 0
   statModifiers:
   - statType: 1
     valueType: 0

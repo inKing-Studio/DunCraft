@@ -16,10 +16,10 @@ MonoBehaviour:
   description: Copper ingot description
   icon: {fileID: 21300000, guid: 01bee79218c72664bb021c858ade2511, type: 3}
   rarity: 0
+  itemCategory: 0
+  materialCategory: 6
   quality: 1
-  category: 5
   statModifiers: []
   usedMaterials:
   - {fileID: 11400000, guid: 50b97a0a315af97489c4b3a3182e2bb6, type: 2}
   - {fileID: 11400000, guid: 50b97a0a315af97489c4b3a3182e2bb6, type: 2}
-  refinementQuality: 1

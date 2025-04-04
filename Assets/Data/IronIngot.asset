@@ -16,10 +16,10 @@ MonoBehaviour:
   description: Iron ingot description
   icon: {fileID: 21300000, guid: a63be1fedec27fa4aadabff7554e04b0, type: 3}
   rarity: 0
+  itemCategory: 0
+  materialCategory: 6
   quality: 1
-  category: 5
   statModifiers: []
   usedMaterials:
   - {fileID: 11400000, guid: af1d502b8b7d91f44afe6f16b000e5d7, type: 2}
   - {fileID: 11400000, guid: af1d502b8b7d91f44afe6f16b000e5d7, type: 2}
-  refinementQuality: 1

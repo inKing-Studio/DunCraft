@@ -1,34 +1,23 @@
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
-using TMPro;
 
-public class CraftingSlot : MonoBehaviour, IPointerDownHandler, IPointerUpHandler, IPointerEnterHandler, IPointerExitHandler
+using TMPro; // Added back for TextMeshProUGUI
+public class CraftingSlot : InventorySlot, IPointerDownHandler, IPointerUpHandler, IPointerEnterHandler, IPointerExitHandler
 {
     public enum SlotType
     {
         Material,
         Recipe,
         Result
-    }
+    }    
 
     public SlotType slotType;
-    public Image icon;
-    public TextMeshProUGUI itemNameText;
-    private ItemData currentItem;
-    private Image slotImage;
-    private Color slotDefaultColor;
-    private bool isPointerDown = false;
-    private bool isDragging = false;
-
-    void Awake()
+    public TextMeshProUGUI itemNameText; // Added back
+    
+    new void Awake() // Use 'new' to hide the base class Awake
     {
-        slotImage = GetComponent<Image>();
-        if (slotImage != null)
-        {
-            slotDefaultColor = slotImage.color;
-        }
-        icon.gameObject.SetActive(false);
+        base.Awake(); // Call base class Awake to initialize base members
     }
 
     public void OnPointerDown(PointerEventData eventData)
@@ -87,11 +76,11 @@ public class CraftingSlot : MonoBehaviour, IPointerDownHandler, IPointerUpHandle
 
     private bool IsValidMaterial(ItemData item)
     {
-        return item.category == MaterialCategory.MetalIngot ||
-               item.category == MaterialCategory.ProcessedLeather ||
-               item.category == MaterialCategory.ProcessedGem ||
-               item.category == MaterialCategory.ProcessedFabric ||
-               item.category == MaterialCategory.WoodPlank;
+        return item.materialCategory == MaterialCategory.MetalIngot ||
+               item.materialCategory == MaterialCategory.ProcessedLeather ||
+               item.materialCategory == MaterialCategory.ProcessedGem ||
+               item.materialCategory == MaterialCategory.ProcessedFabric ||
+               item.materialCategory == MaterialCategory.WoodPlank;
     }
 
     public void SetItem(ItemData item)

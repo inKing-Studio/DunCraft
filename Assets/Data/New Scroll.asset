@@ -9,15 +9,22 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: fef56eb2a967ca64380ac908d752e385, type: 3}
-  m_Name: CottonFabric
+  m_Script: {fileID: 11500000, guid: 2b2330af94ffcfb47be786ff21c4883d, type: 3}
+  m_Name: New Scroll
   m_EditorClassIdentifier: 
-  itemName: Cotton fabric
-  description: Cotton fabric description
-  icon: {fileID: 21300000, guid: ae30364d24a834143899a43c53ffb237, type: 3}
+  itemName: 
+  description: 
+  icon: {fileID: 0}
   rarity: 0
   itemCategory: 0
-  materialCategory: 9
+  materialCategory: 0
   quality: 1
   statModifiers: []
-  usedMaterials: []
+  consumableType: 0
+  duration: 0
+  effectValue: 0
+  isInstant: 1
+  targetSkill: 
+  materialPositions: []
+  requiredMaterials: 00000000
+  identificationPercentage: 20

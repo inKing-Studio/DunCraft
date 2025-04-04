@@ -5,13 +5,14 @@ using UnityEngine.EventSystems;
 public class InventorySlot : MonoBehaviour, IPointerDownHandler, IPointerUpHandler, IPointerEnterHandler, IPointerExitHandler
 {
     public Image icon;
-    private ItemData currentItem;
-    private Image slotImage;
-    private Color slotDefaultColor;
-    private bool isPointerDown = false;
-    private bool isDragging = false;
+    protected ItemData currentItem; // Changed to protected
+    public int slotIndex { get; set; } // Added slotIndex property
+    protected Image slotImage; // Changed to protected
+    protected Color slotDefaultColor; // Changed to protected
+    protected bool isPointerDown = false; // Changed to protected
+    protected bool isDragging = false; // Changed to protected
 
-    void Awake()
+    protected virtual void Awake() // Changed to protected and virtual
     {
         slotImage = GetComponent<Image>();
         if (slotImage != null)
@@ -96,6 +97,12 @@ public class InventorySlot : MonoBehaviour, IPointerDownHandler, IPointerUpHandl
         {
             icon.gameObject.SetActive(true);
         }
+    }
+
+    public void UpdateVisuals() // Added UpdateVisuals method
+    {
+        ShowIcon();
+        UpdateSlotColor();
     }
 
     private void UpdateSlotColor()

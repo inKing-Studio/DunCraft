@@ -20,77 +20,105 @@ public class RefinementSystem : MonoBehaviour
     [System.Serializable]
     public class RefinedMaterialEntry
     {
-        public ItemData refinedData;
+        public RefinedMaterialData refinedData;
         public List<RawMaterialData> requiredMaterials = new List<RawMaterialData>();
     }
 
-    public List<RefinedMaterialEntry> metalIngots = new List<RefinedMaterialEntry>();
-    public List<RefinedMaterialEntry> processedLeather = new List<RefinedMaterialEntry>();
-    public List<RefinedMaterialEntry> cutGems = new List<RefinedMaterialEntry>();
-    public List<RefinedMaterialEntry> processedFabrics = new List<RefinedMaterialEntry>();
-    public List<RefinedMaterialEntry> processedWood = new List<RefinedMaterialEntry>();
+    // Lista única de todas las recetas de refinamiento
+    public List<RefinedMaterialEntry> refinementRecipes = new List<RefinedMaterialEntry>();
 
     public bool CanRefine(RawMaterialData material1, RawMaterialData material2)
     {
         if (material1 == null || material2 == null)
+        {
+            Debug.Log("[RefinementSystem] CanRefine - Uno de los materiales es null");
             return false;
+        }
 
-        if (material1.category != material2.category)
-            return false;
+        Debug.Log($"[RefinementSystem] CanRefine - Verificando materiales:");
+        Debug.Log($"Material 1: {material1.itemName} (Categoría: {material1.materialCategory})");
+        Debug.Log($"Material 2: {material2.itemName} (Categoría: {material2.materialCategory})");
 
-        List<RefinedMaterialEntry> possibleResults = GetPossibleResults(material1.category);
-        if (possibleResults == null || possibleResults.Count == 0)
-            return false;
+        // Buscar una receta que coincida con estos materiales en cualquier orden
+        var recipe = FindRecipeForMaterials(material1, material2);
+        if (recipe != null)
+        {
+            Debug.Log($"[RefinementSystem] CanRefine - Receta encontrada para {recipe.refinedData.itemName}");
+            return true;
+        }
 
-        return possibleResults.Any(r => 
-            r.requiredMaterials.Count == 2 &&
-            ((r.requiredMaterials[0].itemName == material1.itemName && r.requiredMaterials[1].itemName == material2.itemName) ||
-             (r.requiredMaterials[0].itemName == material2.itemName && r.requiredMaterials[1].itemName == material1.itemName)));
+        Debug.Log("[RefinementSystem] CanRefine - No se encontró receta para esta combinación");
+        return false;
     }
 
     public ItemData RefineItems(RawMaterialData material1, RawMaterialData material2)
     {
-        List<RefinedMaterialEntry> possibleResults = GetPossibleResults(material1.category);
-        if (possibleResults == null || possibleResults.Count == 0)
+        Debug.Log($"[RefinementSystem] RefineItems - Intentando refinar:");
+        Debug.Log($"Material 1: {material1.itemName} (Categoría: {material1.materialCategory})");
+        Debug.Log($"Material 2: {material2.itemName} (Categoría: {material2.materialCategory})");
+
+        var recipe = FindRecipeForMaterials(material1, material2);
+        if (recipe == null)
+        {
+            Debug.Log("[RefinementSystem] RefineItems - No se encontró receta válida");
             return null;
+        }
 
-        var recipe = possibleResults.FirstOrDefault(r => 
-            r.requiredMaterials.Count == 2 &&
-            ((r.requiredMaterials[0].itemName == material1.itemName && r.requiredMaterials[1].itemName == material2.itemName) ||
-             (r.requiredMaterials[0].itemName == material2.itemName && r.requiredMaterials[1].itemName == material1.itemName)));
+        Debug.Log($"[RefinementSystem] RefineItems - Creando {recipe.refinedData.itemName}");
+        return CreateRefinedMaterial(material1, material2, recipe.refinedData);
+    }
 
-        if (recipe != null)
-            return CreateRefinedMaterial(material1, material2, recipe.refinedData);
+    private RefinedMaterialEntry FindRecipeForMaterials(RawMaterialData material1, RawMaterialData material2)
+    {
+        foreach (var recipe in refinementRecipes)
+        {
+            if (recipe.requiredMaterials.Count != 2) continue;
 
+            // Verificar si los materiales coinciden en cualquier orden
+            bool match1 = recipe.requiredMaterials[0].itemName == material1.itemName &&
+                         recipe.requiredMaterials[1].itemName == material2.itemName;
+
+            bool match2 = recipe.requiredMaterials[0].itemName == material2.itemName &&
+                         recipe.requiredMaterials[1].itemName == material1.itemName;
+
+            if (match1 || match2)
+            {
+                Debug.Log($"[RefinementSystem] FindRecipeForMaterials - Receta encontrada: {recipe.refinedData.itemName}");
+                return recipe;
+            }
+        }
+
+        Debug.Log("[RefinementSystem] FindRecipeForMaterials - No se encontró receta");
         return null;
     }
 
-    private List<RefinedMaterialEntry> GetPossibleResults(MaterialCategory category)
+    private ItemData CreateRefinedMaterial(RawMaterialData material1, RawMaterialData material2, RefinedMaterialData baseData)
     {
-        return category switch
-        {
-            MaterialCategory.MetalOre => metalIngots,
-            MaterialCategory.AnimalSkin => processedLeather,
-            MaterialCategory.CrystalRaw => cutGems,
-            MaterialCategory.FiberRaw => processedFabrics,
-            MaterialCategory.WoodTrunk => processedWood,
-            _ => null
-        };
-    }
-
-    private ItemData CreateRefinedMaterial(RawMaterialData material1, RawMaterialData material2, ItemData baseData)
-    {
-        if (baseData == null)
-            return null;
-
-        ItemData refinedItem = ScriptableObject.CreateInstance<ItemData>();
+        Debug.Log($"[RefinementSystem] CreateRefinedMaterial - Creando nuevo material refinado");
+        
+        var refinedItem = ScriptableObject.CreateInstance<RefinedMaterialData>();
+        
+        // Copiar propiedades básicas
+        refinedItem.itemName = baseData.itemName;
+        refinedItem.description = baseData.description;
         refinedItem.icon = baseData.icon;
         refinedItem.rarity = baseData.rarity;
         refinedItem.statModifiers = new List<StatModifier>(baseData.statModifiers);
-        refinedItem.itemName = baseData.itemName;
-        refinedItem.description = baseData.description;
+        
+        // Establecer categorías
+        refinedItem.itemCategory = ItemCategory.Material;
+        refinedItem.materialCategory = baseData.materialCategory;
+        
+        // Calcular calidad promedio
         refinedItem.quality = (material1.quality + material2.quality) / 2;
+        
+        // Agregar materiales usados
+        refinedItem.usedMaterials = new List<RawMaterialData> { material1, material2 };
 
+        Debug.Log($"[RefinementSystem] CreateRefinedMaterial - Material creado: {refinedItem.itemName}");
+        Debug.Log($"Categoría: {refinedItem.materialCategory}");
+        Debug.Log($"Calidad: {refinedItem.quality}");
+        
         return refinedItem;
     }
 }
